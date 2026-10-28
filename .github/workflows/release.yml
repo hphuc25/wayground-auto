@@ -125,7 +125,7 @@ jobs:
         run: |
           mapfile -t FILES < <(find artifacts -type f | sort)
           printf 'Publishing %s file(s)\n' "${#FILES[@]}"
-          gh release create "$TAG" --target "$GITHUB_SHA" \
+          gh release create "$TAG" -R "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
               --title "Wayground Pro Automator $TAG" --generate-notes || true
-          gh release upload "$TAG" "${FILES[@]}" --clobber
-          gh release view "$TAG" --json assets --jq '.assets[].name'
+          gh release upload "$TAG" -R "$GITHUB_REPOSITORY" "${FILES[@]}" --clobber
+          gh release view "$TAG" -R "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name'
