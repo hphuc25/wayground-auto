@@ -11,7 +11,7 @@ filled-in `PKGBUILD` for the prebuilt variant. Users only need the PKGBUILD:
 
 ```bash
 mkdir wga-pkgbuild && cd wga-pkgbuild
-gh release download --repo hphuc25/wayground-auto PKGBUILD SRCINFO
+gh release download --repo hphuc25/wayground-auto -p PKGBUILD -p SRCINFO
 # or without the GitHub CLI:
 # curl -LO https://github.com/hphuc25/wayground-auto/releases/latest/download/PKGBUILD
 makepkg -si
