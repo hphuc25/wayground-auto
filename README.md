@@ -212,6 +212,13 @@ makepkg -si
 wayground-automator          # desktop UI after installation
 ```
 
+Every release also carries a single-file AppImage for any distribution:
+
+```bash
+gh release download --repo hphuc25/wayground-auto -p 'WaygroundAutomator-*.AppImage'
+chmod +x WaygroundAutomator-*.AppImage && ./WaygroundAutomator-*.AppImage
+```
+
 ```bash
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt

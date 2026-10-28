@@ -125,6 +125,7 @@ the Actions tab) and publishes one GitHub release with:
 | Asset | Built on | Contents |
 | ----- | -------- | -------- |
 | `WaygroundAutomator-<tag>-linux-x86_64.tar.gz` | Ubuntu 22.04 | One-file PyInstaller binary |
+| `WaygroundAutomator-<ver>-x86_64.AppImage` | Ubuntu 22.04 | Single-file AppImage (no installation) |
 | `wayground-pro-automator-<ver>-1-x86_64.pkg.tar.zst` | Arch Linux container | System package from `packaging/arch/PKGBUILD` |
 | `PKGBUILD`, `SRCINFO` | Arch Linux container | Prebuilt variant with the release asset URL and its SHA-256 |
 | `binary.sha256` | Ubuntu 22.04 | Checksum of the standalone binary archive |

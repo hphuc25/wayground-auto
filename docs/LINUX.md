@@ -45,21 +45,23 @@ see [ARCH.md](ARCH.md)).
 ## Build a standalone binary
 
 Release binaries are attached to every GitHub release
-(`WaygroundAutomator-<tag>-linux-x86_64.tar.gz`), so most users only need to
-download and unpack one. To build it yourself, see the two options below.
+(`WaygroundAutomator-<tag>-linux-x86_64.tar.gz` and an AppImage), so most
+users only need to download one. To build it yourself, see the options below.
 
 ### In a container (recommended)
 
-This produces a binary built on Ubuntu 22.04, so it runs on Ubuntu 22.04+,
-Debian 12+ and other current distributions:
+This produces a binary (plus an AppImage) built on Ubuntu 22.04, so the result
+runs on Ubuntu 22.04+, Debian 12+ and other current distributions:
 
 ```bash
 ./scripts/build_in_container.sh
 # podman or docker is detected automatically; override with CONTAINER_ENGINE=docker
 ```
 
-The result is `dist/WaygroundAutomator`. The build uses `Containerfile` and
-`.dockerignore`; `dist/` is mounted into the container as `/out`.
+The result is `dist/WaygroundAutomator` and
+`dist/WaygroundAutomator-<version>-x86_64.AppImage`. The build uses
+`Containerfile` and `.dockerignore`; `dist/` is mounted into the container as
+`/out`.
 
 To add the binary to the application menu (also removes the Wayland portal
 warning about an unknown app ID):
@@ -93,6 +95,23 @@ Icon=/opt/wayground/logo.png
 Terminal=false
 Categories=Utility;
 ```
+
+### AppImage (single-file, no install)
+
+`scripts/build_appimage.sh` packs the standalone binary into one AppImage that
+runs on most distributions without installation:
+
+```bash
+sudo pacman -S squashfs-tools      # or: sudo apt install squashfs-tools file
+./scripts/build_appimage.sh                       # builds the binary too
+./scripts/build_appimage.sh dist/WaygroundAutomator   # reuse an existing binary
+./dist/WaygroundAutomator-4.0-x86_64.AppImage
+```
+
+`appimagetool` is downloaded automatically and cached under
+`build/appimage-tools`; FUSE is not required. The container build
+(`./scripts/build_in_container.sh`) produces the same AppImage, and every
+GitHub release carries one — downloading it and running `chmod +x` is enough.
 
 ## Platform notes
 

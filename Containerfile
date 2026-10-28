@@ -18,6 +18,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libpython3.10 \
         binutils \
         ca-certificates \
+        curl \
+        file \
+        squashfs-tools \
         libgl1 \
         libegl1 \
         libglib2.0-0 \
@@ -58,4 +61,5 @@ RUN pip install -r requirements.txt pyinstaller
 COPY . .
 
 # /out is expected to be a mounted volume; see scripts/build_in_container.sh.
-CMD ["python", "scripts/build_linux.py", "--distpath", "/out"]
+# Produces both the one-file binary and the AppImage.
+CMD ["bash", "-c", "python scripts/build_linux.py --distpath /out && WAYGROUND_OUT=/out scripts/build_appimage.sh /out/WaygroundAutomator"]

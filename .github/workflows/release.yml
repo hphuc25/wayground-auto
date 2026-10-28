@@ -58,16 +58,22 @@ jobs:
       - name: Build the standalone binary
         run: python scripts/build_linux.py --distpath dist-ci
 
+      - name: Build the AppImage
+        run: |
+          sudo apt-get install -y --no-install-recommends squashfs-tools file
+          ./scripts/build_appimage.sh dist-ci/WaygroundAutomator
+
       - name: Package and checksum
         run: |
           tar -C dist-ci -czf "WaygroundAutomator-${{ needs.version.outputs.tag }}-linux-x86_64.tar.gz" WaygroundAutomator
-          sha256sum "WaygroundAutomator-${{ needs.version.outputs.tag }}-linux-x86_64.tar.gz" > binary.sha256
+          sha256sum "WaygroundAutomator-${{ needs.version.outputs.tag }}-linux-x86_64.tar.gz" dist/WaygroundAutomator-*.AppImage > binary.sha256
 
       - uses: actions/upload-artifact@v4
         with:
           name: linux-binary
           path: |
             WaygroundAutomator-*.tar.gz
+            WaygroundAutomator-*.AppImage
             binary.sha256
 
   # System package built from packaging/arch/PKGBUILD on a clean Arch Linux.

@@ -27,9 +27,9 @@ if [ "$ENGINE" = "podman" ]; then
     VOLUME="$VOLUME:Z"
 fi
 
-echo "==> Building WaygroundAutomator"
+echo "==> Building WaygroundAutomator (binary + AppImage)"
 "$ENGINE" run --rm -v "$VOLUME" "$IMAGE"
 
 echo
-echo "Binary: dist/WaygroundAutomator"
-ls -lh dist/WaygroundAutomator
+echo "Output in dist/:"
+ls -lh dist
