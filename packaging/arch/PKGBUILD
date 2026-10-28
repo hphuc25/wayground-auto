@@ -1,6 +1,6 @@
 # Maintainer: Wayground Pro Automator developers <https://github.com/whyred2/wayground-pro-automator>
 pkgname=wayground-pro-automator
-pkgver=4.0
+pkgver=4.0.2
 pkgrel=1
 pkgdesc="Automated test-taking on wayground.com with a native desktop UI and a console mode"
 arch=('x86_64' 'aarch64')

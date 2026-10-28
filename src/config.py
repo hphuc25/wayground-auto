@@ -5,7 +5,7 @@ Configuration: constants, CSS selectors, timing parameters, and console colors.
 import os
 import sys
 
-VERSION = "4.0"
+VERSION = "4.0.2"
 APP_NAME = "WaygroundAutomator"
 
 
