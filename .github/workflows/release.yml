@@ -66,8 +66,11 @@ jobs:
       - name: Package and checksum
         run: |
           tar -C dist-ci -czf "WaygroundAutomator-${{ needs.version.outputs.tag }}-linux-x86_64.tar.gz" WaygroundAutomator
-          sha256sum "WaygroundAutomator-${{ needs.version.outputs.tag }}-linux-x86_64.tar.gz" dist-ci/WaygroundAutomator-*.AppImage > binary.sha256
-          ls -lh dist-ci
+          # Checksums reference the released file names, so `sha256sum -c` works
+          # after downloading both assets.
+          sha256sum "WaygroundAutomator-${{ needs.version.outputs.tag }}-linux-x86_64.tar.gz" > binary.sha256
+          (cd dist-ci && sha256sum WaygroundAutomator-*.AppImage) >> binary.sha256
+          cat binary.sha256
 
       - uses: actions/upload-artifact@v4
         with:
