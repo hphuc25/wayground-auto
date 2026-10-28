@@ -44,6 +44,10 @@ see [ARCH.md](ARCH.md)).
 
 ## Build a standalone binary
 
+Release binaries are attached to every GitHub release
+(`WaygroundAutomator-<tag>-linux-x86_64.tar.gz`), so most users only need to
+download and unpack one. To build it yourself, see the two options below.
+
 ### In a container (recommended)
 
 This produces a binary built on Ubuntu 22.04, so it runs on Ubuntu 22.04+,

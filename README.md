@@ -206,7 +206,9 @@ behavior under Wayland/X11).
 Arch Linux ships a system package build: **[docs/ARCH.md](docs/ARCH.md)**
 
 ```bash
-cd packaging/arch && makepkg -si
+# Download the PKGBUILD of the latest release and install it
+mkdir wga && cd wga && gh release download --repo hphuc25/wayground-auto PKGBUILD
+makepkg -si
 wayground-automator          # desktop UI after installation
 ```
 

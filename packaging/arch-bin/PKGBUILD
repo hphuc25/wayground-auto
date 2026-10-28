@@ -1,0 +1,30 @@
+# Maintainer: Wayground Pro Automator developers <https://github.com/hphuc25/wayground-auto>
+# Prebuilt package variant: downloads the .pkg.tar.zst built by CI and
+# re-packages it as wayground-pro-automator-bin.
+#
+# The placeholders __PKGVER__, __PKGREL__, __ASSET__, __SHA256__ and __TAG__
+# are filled by .github/workflows/release.yml; the filled PKGBUILD and a
+# matching .SRCINFO are attached to every GitHub release.
+pkgname=wayground-pro-automator-bin
+pkgver=__PKGVER__
+pkgrel=__PKGREL__
+pkgdesc="Automated test-taking on wayground.com with a native desktop UI and a console mode (prebuilt package)"
+arch=('x86_64' 'aarch64')
+url="https://github.com/hphuc25/wayground-auto"
+license=('MIT')
+depends=('python' 'pyside6' 'python-playwright' 'python-openai')
+optdepends=(
+  'chromium: free Chromium-based browser used for the automation profile'
+  'google-chrome: Google Chrome instead of Chromium'
+  'brave-browser: Brave instead of Chromium'
+)
+provides=('wayground-pro-automator')
+conflicts=('wayground-pro-automator')
+options=(!strip)
+source=("https://github.com/hphuc25/wayground-auto/releases/download/__TAG__/__ASSET__")
+sha256sums=('__SHA256__')
+
+package() {
+    bsdtar -xf "$srcdir/__ASSET__" -C "$pkgdir"
+    rm -f "$pkgdir/.PKGINFO" "$pkgdir/.BUILDINFO" "$pkgdir/.MTREE" "$pkgdir/.INSTALL"
+}
