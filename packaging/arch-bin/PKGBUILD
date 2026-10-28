@@ -2,9 +2,10 @@
 # Prebuilt package variant: downloads the .pkg.tar.zst built by CI and
 # re-packages it as wayground-pro-automator-bin.
 #
-# The placeholders __PKGVER__, __PKGREL__, __ASSET__, __SHA256__ and __TAG__
-# are filled by .github/workflows/release.yml; the filled PKGBUILD and a
-# matching .SRCINFO are attached to every GitHub release.
+# The double-underscore placeholders in this file are filled by
+# scripts/generate_arch_bin_pkgbuild.sh (invoked from
+# .github/workflows/release.yml); the filled PKGBUILD and a matching .SRCINFO
+# are attached to every GitHub release.
 pkgname=wayground-pro-automator-bin
 pkgver=__PKGVER__
 pkgrel=__PKGREL__

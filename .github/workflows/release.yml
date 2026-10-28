@@ -95,28 +95,20 @@ jobs:
 
       - name: Generate the prebuilt-variant PKGBUILD
         run: |
-          cp /home/builder/build/packaging/arch/*.pkg.tar.zst .
-          ASSET="$(ls wayground-pro-automator-*.pkg.tar.zst)"
-          VERSION="$(echo "$ASSET" | sed -E 's/^wayground-pro-automator-(.+)-([0-9]+)-x86_64\.pkg\.tar\.zst$/\1/')"
-          RELEASE="$(echo "$ASSET" | sed -E 's/^wayground-pro-automator-(.+)-([0-9]+)-x86_64\.pkg\.tar\.zst$/\2/')"
-          SHA256="$(sha256sum "$ASSET" | awk '{print $1}')"
-          mkdir -p bin-pkgbuild
-          sed -e "s/__PKGVER__/$VERSION/g" \
-              -e "s/__PKGREL__/$RELEASE/g" \
-              -e "s/__ASSET__/$ASSET/g" \
-              -e "s/__SHA256__/$SHA256/g" \
-              -e "s/__TAG__/${{ needs.version.outputs.tag }}/g" \
-              packaging/arch-bin/PKGBUILD > bin-pkgbuild/PKGBUILD
-          cd bin-pkgbuild && makepkg --printsrcinfo > .SRCINFO
-          cat .SRCINFO
+          mkdir -p /home/builder/artifacts
+          cp /home/builder/build/packaging/arch/*.pkg.tar.zst /home/builder/artifacts/
+          chown -R builder /home/builder/artifacts
+          su builder -c "bash $GITHUB_WORKSPACE/scripts/generate_arch_bin_pkgbuild.sh ${{ needs.version.outputs.tag }} /home/builder/artifacts"
+          cp /home/builder/artifacts/PKGBUILD /home/builder/artifacts/.SRCINFO .
 
       - uses: actions/upload-artifact@v4
         with:
           name: arch-package
+          include-hidden-files: true
           path: |
             wayground-pro-automator-*.pkg.tar.zst
-            bin-pkgbuild/PKGBUILD
-            bin-pkgbuild/.SRCINFO
+            PKGBUILD
+            .SRCINFO
 
   release:
     runs-on: ubuntu-22.04
@@ -131,8 +123,8 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ needs.version.outputs.tag }}
         run: |
-          shopt -s globstar nullglob
-          FILES=(artifacts/**/*)
+          mapfile -t FILES < <(find artifacts -type f | sort)
+          printf 'Publishing %s file(s)\n' "${#FILES[@]}"
           gh release create "$TAG" --target "$GITHUB_SHA" \
               --title "Wayground Pro Automator $TAG" --generate-notes || true
           gh release upload "$TAG" "${FILES[@]}" --clobber
