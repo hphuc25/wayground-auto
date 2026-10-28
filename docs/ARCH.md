@@ -11,12 +11,14 @@ filled-in `PKGBUILD` for the prebuilt variant. Users only need the PKGBUILD:
 
 ```bash
 mkdir wga-pkgbuild && cd wga-pkgbuild
-gh release download --repo hphuc25/wayground-auto PKGBUILD .SRCINFO
+gh release download --repo hphuc25/wayground-auto PKGBUILD SRCINFO
 # or without the GitHub CLI:
 # curl -LO https://github.com/hphuc25/wayground-auto/releases/latest/download/PKGBUILD
 makepkg -si
 ```
 
+`SRCINFO` is the AUR-style `.SRCINFO` with a plain release-asset name; it is
+only needed for AUR uploads and can be skipped locally.
 `makepkg` downloads the matching package from the release, verifies its
 SHA-256, and installs it with `pacman` together with the repository
 dependencies.
@@ -124,7 +126,7 @@ the Actions tab) and publishes one GitHub release with:
 | ----- | -------- | -------- |
 | `WaygroundAutomator-<tag>-linux-x86_64.tar.gz` | Ubuntu 22.04 | One-file PyInstaller binary |
 | `wayground-pro-automator-<ver>-1-x86_64.pkg.tar.zst` | Arch Linux container | System package from `packaging/arch/PKGBUILD` |
-| `PKGBUILD`, `.SRCINFO` | Arch Linux container | Prebuilt variant with the release asset URL and its SHA-256 |
+| `PKGBUILD`, `SRCINFO` | Arch Linux container | Prebuilt variant with the release asset URL and its SHA-256 |
 | `binary.sha256` | Ubuntu 22.04 | Checksum of the standalone binary archive |
 
 To cut a release:

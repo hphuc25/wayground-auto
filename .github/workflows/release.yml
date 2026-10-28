@@ -96,19 +96,20 @@ jobs:
       - name: Generate the prebuilt-variant PKGBUILD
         run: |
           mkdir -p /home/builder/artifacts
-          cp /home/builder/build/packaging/arch/*.pkg.tar.zst /home/builder/artifacts/
           chown -R builder /home/builder/artifacts
+          cp /home/builder/build/packaging/arch/*.pkg.tar.zst /home/builder/artifacts/
           su builder -c "bash $GITHUB_WORKSPACE/scripts/generate_arch_bin_pkgbuild.sh ${{ needs.version.outputs.tag }} /home/builder/artifacts"
-          cp /home/builder/artifacts/PKGBUILD /home/builder/artifacts/.SRCINFO .
+          cp /home/builder/artifacts/*.pkg.tar.zst /home/builder/artifacts/PKGBUILD .
+          # Release assets keep a plain name; makepkg only reads PKGBUILD.
+          cp /home/builder/artifacts/.SRCINFO ./SRCINFO
 
       - uses: actions/upload-artifact@v4
         with:
           name: arch-package
-          include-hidden-files: true
           path: |
             wayground-pro-automator-*.pkg.tar.zst
             PKGBUILD
-            .SRCINFO
+            SRCINFO
 
   release:
     runs-on: ubuntu-22.04
