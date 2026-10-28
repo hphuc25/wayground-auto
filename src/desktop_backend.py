@@ -253,7 +253,10 @@ class DesktopBackend:
                 try:
                     return launch_browser_with_debug(self.port, interactive=False)
                 except SystemExit:
-                    raise RuntimeError("Install Google Chrome, Chromium or Microsoft Edge, then connect again.") from None
+                    raise RuntimeError(
+                        "No browser was found. Install Google Chrome, Chromium or Microsoft Edge, "
+                        "or set WAYGROUND_BROWSER=/path/to/browser, then connect again."
+                    ) from None
             await asyncio.to_thread(launch)
         if not self.playwright:
             self.playwright = await async_playwright().start()

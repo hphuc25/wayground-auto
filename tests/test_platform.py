@@ -61,7 +61,53 @@ class BrowserDetectionTests(unittest.TestCase):
             binary.write_text("", encoding="utf-8")
             with patch.object(config, "playwright_browsers_dir", return_value=folder):
                 candidates = browser.browser_candidates()
-        self.assertIn((str(binary), "Chromium"), candidates)
+            self.assertIn((str(binary), "Chromium"), candidates)
+
+    def test_sandboxed_browsers_come_last(self):
+        candidates = browser.browser_candidates()
+        paths = [path for path, _ in candidates]
+        snap = paths.index("/snap/bin/chromium") if "/snap/bin/chromium" in paths else len(paths)
+        self.assertLess(paths.index("/usr/bin/chromium"), snap)
+
+    def test_sandbox_kind(self):
+        self.assertEqual(browser.sandbox_kind("/snap/bin/chromium"), "snap")
+        self.assertEqual(browser.sandbox_kind("/var/lib/flatpak/exports/bin/com.google.Chrome"), "flatpak")
+        self.assertIsNone(browser.sandbox_kind("/usr/bin/google-chrome"))
+
+    def test_snap_profile_is_not_hidden(self):
+        with tempfile.TemporaryDirectory() as home:
+            with patch.dict(os.environ, {"HOME": home}, clear=False):
+                profile = browser.get_user_data_dir("/snap/bin/chromium", "Chromium")
+        self.assertTrue(profile.startswith(home + os.sep))
+        self.assertNotIn("/.", os.path.relpath(profile, home))
+
+    def test_flatpak_command_grants_the_profile_directory(self):
+        cmd = browser.browser_command("/var/lib/flatpak/exports/bin/com.google.Chrome", 9222, "/tmp/profile")
+        self.assertEqual(cmd[:3], ["flatpak", "run", "--filesystem=/tmp/profile"])
+        self.assertIn("--remote-debugging-port=9222", cmd)
+
+    def test_regular_command_uses_the_executable(self):
+        cmd = browser.browser_command("/usr/bin/chromium", 9333, "/tmp/profile")
+        self.assertEqual(cmd[0], "/usr/bin/chromium")
+        self.assertIn("--user-data-dir=/tmp/profile", cmd)
+
+    def test_wayground_browser_override(self):
+        with tempfile.TemporaryDirectory() as folder:
+            fake = Path(folder) / "my-chrome"
+            fake.write_text("", encoding="utf-8")
+            fake.chmod(0o755)
+            with patch.dict(os.environ, {"WAYGROUND_BROWSER": str(fake)}, clear=False):
+                path, name = browser.find_browser_exe()
+        self.assertEqual(path, str(fake))
+        self.assertEqual(name, "Chrome")
+
+    def test_broken_override_falls_back_to_auto_detect(self):
+        with patch.dict(os.environ, {"WAYGROUND_BROWSER": "/nonexistent/browser"}, clear=False), \
+             patch.object(browser.shutil, "which",
+                          side_effect=lambda name: "/usr/bin/chromium" if name == "chromium" else None), \
+             patch.object(browser, "_executable",
+                          side_effect=lambda p: bool(p) and p == "/usr/bin/chromium"):
+            self.assertEqual(browser.manual_override(), None)
 
 
 if __name__ == "__main__":
