@@ -109,6 +109,24 @@ class BrowserDetectionTests(unittest.TestCase):
                           side_effect=lambda p: bool(p) and p == "/usr/bin/chromium"):
             self.assertEqual(browser.manual_override(), None)
 
+    def test_browser_env_drops_pyinstaller_libs(self):
+        # A PyInstaller binary exports LD_LIBRARY_PATH=/tmp/_MEI... which makes
+        # a child Chrome load bundled (older) libraries and crash.
+        old = getattr(sys, "_MEIPASS", None)
+        try:
+            sys._MEIPASS = "/tmp/_MEIabcdef"
+            with patch.dict(os.environ,
+                            {"LD_LIBRARY_PATH": "/tmp/_MEIabcdef:/usr/lib/custom"},
+                            clear=False):
+                env = browser._browser_env()
+        finally:
+            if old is None:
+                del sys._MEIPASS
+            else:
+                sys._MEIPASS = old
+        self.assertNotIn("/tmp/_MEIabcdef", env.get("LD_LIBRARY_PATH", ""))
+        self.assertIn("/usr/lib/custom", env.get("LD_LIBRARY_PATH", ""))
+
 
 if __name__ == "__main__":
     unittest.main()

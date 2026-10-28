@@ -238,6 +238,36 @@ def launch_log_path() -> str:
     return log_path
 
 
+def _launch_log_tail(log_path: str, lines: int = 8) -> str:
+    """Last meaningful lines of the browser launch log (for error messages)."""
+    try:
+        with open(log_path, encoding="utf-8", errors="replace") as handle:
+            content = [line.strip() for line in handle if line.strip()]
+    except OSError:
+        return ""
+    return "\n".join(f"  {line}" for line in content[-lines:])
+
+
+def _browser_env() -> dict:
+    """
+    Environment for the browser process.
+
+    A PyInstaller binary sets LD_LIBRARY_PATH to its bundled libraries; a
+    child browser inherits it and may crash against those libraries. Remove
+    the PyInstaller entries so the browser links against the system ones.
+    """
+    env = dict(os.environ)
+    meipass = getattr(sys, "_MEIPASS", "")
+    if meipass:
+        kept = [p for p in env.get("LD_LIBRARY_PATH", "").split(os.pathsep)
+                if p and not p.startswith(meipass) and not p.startswith("/tmp/_MEI")]
+        if kept:
+            env["LD_LIBRARY_PATH"] = os.pathsep.join(kept)
+        else:
+            env.pop("LD_LIBRARY_PATH", None)
+    return env
+
+
 def launch_browser_with_debug(port: int, *, interactive: bool = True) -> subprocess.Popen:
     """
     Find Edge/Chrome, launch with --remote-debugging-port.
@@ -257,6 +287,7 @@ def launch_browser_with_debug(port: int, *, interactive: bool = True) -> subproc
     log_file = open(log_path, "w", encoding="utf-8", errors="replace")
     proc = subprocess.Popen(
         cmd,
+        env=_browser_env(),
         stdout=log_file,
         stderr=subprocess.STDOUT,
         creationflags=(subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP) if os.name == "nt" else 0,
@@ -264,20 +295,38 @@ def launch_browser_with_debug(port: int, *, interactive: bool = True) -> subproc
     )
     log_file.close()
 
-    # Wait for browser to start and open the debug port (typically 1-2 seconds with dedicated profile)
-    for i in range(12):
+    # Wait for the debug port (a cold first start can take a while).
+    deadline = time.time() + 30
+    waited = 0
+    while time.time() < deadline:
         if is_port_open(port):
             log_info(f"✅ {browser_name} is ready and connected! (port {port})")
             return proc
+        if proc.poll() is not None:
+            # The browser exited: show its output instead of waiting forever.
+            detail = _launch_log_tail(log_path)
+            message = (
+                f"{browser_name} exited immediately (code {proc.returncode}). "
+                f"Browser output was saved to: {log_path}"
+            )
+            if detail:
+                message += f"\n{detail}"
+            if not interactive:
+                raise RuntimeError(message)
+            log_error(message)
+            sys.exit(1)
         time.sleep(0.8)
-        if i % 3 == 2:
-            log_step(f"Waiting for {browser_name} port {port}... ({int((i+1)*0.8)}s)")
+        waited += 0.8
+        if int(waited) % 4 < 1:
+            log_step(f"Waiting for {browser_name} port {port}... ({int(waited)}s)")
 
+    detail = _launch_log_tail(log_path)
     if not interactive:
         raise RuntimeError(
             f"{browser_name} did not open the automation port. "
             "Close the Automator browser window and connect again. Your other browser windows are left open. "
             f"Browser output was saved to: {log_path}"
+            + (f"\n{detail}" if detail else "")
         )
     print()
     log_error(f"{browser_name} is running, but port {port} is not responding.")
