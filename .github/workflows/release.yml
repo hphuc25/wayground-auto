@@ -74,7 +74,7 @@ jobs:
           name: linux-binary
           path: |
             WaygroundAutomator-*.tar.gz
-            WaygroundAutomator-*.AppImage
+            dist-ci/WaygroundAutomator-*.AppImage
             binary.sha256
 
   # System package built from packaging/arch/PKGBUILD on a clean Arch Linux.
