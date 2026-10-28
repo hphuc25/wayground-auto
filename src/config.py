@@ -6,28 +6,72 @@ import os
 import sys
 
 VERSION = "4.0"
+APP_NAME = "WaygroundAutomator"
+
+
+def data_dir() -> str:
+    """Per-user writable data folder (browser profile, Playwright cache)."""
+    if os.name == "nt":
+        base = os.environ.get("LOCALAPPDATA", os.path.expanduser(r"~\AppData\Local"))
+    elif sys.platform == "darwin":
+        base = os.path.expanduser("~/Library/Application Support")
+    else:
+        base = os.environ.get("XDG_DATA_HOME", os.path.expanduser("~/.local/share"))
+    return os.path.join(base, APP_NAME)
+
+
+def config_dir() -> str:
+    """Per-user folder for display preferences (no secrets or game data)."""
+    if os.name == "nt":
+        return data_dir()
+    if sys.platform == "darwin":
+        return os.path.expanduser("~/Library/Application Support") + os.sep + APP_NAME
+    base = os.environ.get("XDG_CONFIG_HOME", os.path.expanduser("~/.config"))
+    return os.path.join(base, APP_NAME)
+
+
+def playwright_browsers_dir() -> str:
+    """Global Playwright browser folder used by frozen builds."""
+    if os.name == "nt":
+        return os.path.join(data_dir(), "ms-playwright")
+    if sys.platform == "darwin":
+        return os.path.expanduser("~/Library/Caches/ms-playwright")
+    base = os.environ.get("XDG_CACHE_HOME", os.path.expanduser("~/.cache"))
+    return os.path.join(base, "ms-playwright")
+
+
+def _apply_env_file(env_file):
+    """Read one KEY=VALUE file; existing environment variables win."""
+    if not os.path.isfile(env_file):
+        return
+    try:
+        with open(env_file, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                k, v = line.split("=", 1)
+                k = k.strip()
+                v = v.strip().strip("'\"")
+                if k and k not in os.environ:
+                    os.environ[k] = v
+    except Exception:
+        pass
 
 
 def _load_dotenv():
-    """Lightweight loader for .env file in project root, avoiding mandatory external dependencies."""
+    """Lightweight loader for .env, avoiding mandatory external dependencies.
+
+    Reads the project/install folder first, then the per-user config folder
+    (`~/.config/WaygroundAutomator/.env` on Linux) so system-wide installs can
+    keep personal settings in a writable place.
+    """
     root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     if getattr(sys, "frozen", False):
         root_dir = os.path.dirname(sys.executable)
-    env_file = os.path.join(root_dir, ".env")
-    if os.path.isfile(env_file):
-        try:
-            with open(env_file, "r", encoding="utf-8") as f:
-                for line in f:
-                    line = line.strip()
-                    if not line or line.startswith("#") or "=" not in line:
-                        continue
-                    k, v = line.split("=", 1)
-                    k = k.strip()
-                    v = v.strip().strip("'\"")
-                    if k and k not in os.environ:
-                        os.environ[k] = v
-        except Exception:
-            pass
+    for env_file in dict.fromkeys((os.path.join(root_dir, ".env"),
+                                   os.path.join(config_dir(), ".env"))):
+        _apply_env_file(env_file)
 
 
 _load_dotenv()

@@ -253,7 +253,7 @@ class DesktopBackend:
                 try:
                     return launch_browser_with_debug(self.port, interactive=False)
                 except SystemExit:
-                    raise RuntimeError("Install Microsoft Edge or Google Chrome, then connect again.") from None
+                    raise RuntimeError("Install Google Chrome, Chromium or Microsoft Edge, then connect again.") from None
             await asyncio.to_thread(launch)
         if not self.playwright:
             self.playwright = await async_playwright().start()

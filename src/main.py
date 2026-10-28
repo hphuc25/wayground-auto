@@ -20,8 +20,14 @@ os.environ["NODE_OPTIONS"] = "--no-deprecation"
 
 # force Playwright (in the compiled .exe) to search for browsers in the global folder
 if getattr(sys, 'frozen', False) and "PLAYWRIGHT_BROWSERS_PATH" not in os.environ:
-    _local_appdata = os.environ.get("LOCALAPPDATA", os.path.expanduser("~\\AppData\\Local"))
-    os.environ["PLAYWRIGHT_BROWSERS_PATH"] = os.path.join(_local_appdata, "ms-playwright")
+    if os.name == "nt":
+        _local_appdata = os.environ.get("LOCALAPPDATA", os.path.expanduser(r"~\AppData\Local"))
+        os.environ["PLAYWRIGHT_BROWSERS_PATH"] = os.path.join(_local_appdata, "ms-playwright")
+    elif sys.platform == "darwin":
+        os.environ["PLAYWRIGHT_BROWSERS_PATH"] = os.path.expanduser("~/Library/Caches/ms-playwright")
+    else:
+        _cache = os.environ.get("XDG_CACHE_HOME", os.path.expanduser("~/.cache"))
+        os.environ["PLAYWRIGHT_BROWSERS_PATH"] = os.path.join(_cache, "ms-playwright")
 
 try:
     from playwright.async_api import async_playwright

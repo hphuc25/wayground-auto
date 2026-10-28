@@ -1,0 +1,16 @@
+.git
+.github
+.gitignore
+.venv
+venv
+dist
+build
+scratch
+user_data
+test-results
+ms-playwright
+__pycache__
+*.py[cod]
+docs/screenshots
+docs/releases
+tests

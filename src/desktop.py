@@ -1,7 +1,10 @@
 """Native desktop windows. Browser work stays on the backend's asyncio thread."""
 
 import ctypes
-from ctypes import wintypes
+try:
+    from ctypes import wintypes
+except ImportError:  # non-Windows platforms have no wintypes module
+    wintypes = None
 import json
 import math
 import os
@@ -51,10 +54,19 @@ def load_icon(name: str, dark: bool = True) -> QIcon:
     return QIcon()
 
 
+def app_icon() -> QIcon:
+    """Window/tray icon; `.ico` on Windows, PNG fallback elsewhere."""
+    if sys.platform == "win32":
+        icon = QIcon(str(ASSETS_DIR / "icon.ico"))
+        if not icon.isNull():
+            return icon
+    return QIcon(str(ASSETS_DIR / "logo.png"))
+
+
 class Preferences:
     """Only display/runtime preferences; never account secrets, keys or game data."""
     def __init__(self, path=None):
-        self.path = Path(path) if path else Path(os.getenv("LOCALAPPDATA", str(Path.home()))) / "WaygroundAutomator" / "ui.json"
+        self.path = Path(path) if path else Path(config.config_dir()) / "ui.json"
         self.values = dict(DEFAULTS)
         try:
             values = json.loads(self.path.read_text(encoding="utf-8"))
@@ -537,7 +549,7 @@ class DesktopWindow(QMainWindow):
         super().__init__()
         self.setLocale(QLocale(QLocale.Language.English, QLocale.Country.UnitedStates))
         self.setWindowTitle(f"Wayground Pro v{config.VERSION}")
-        self.setWindowIcon(QIcon(str(ASSETS_DIR / "icon.ico")))
+        self.setWindowIcon(app_icon())
         self.prefs = prefs or Preferences()
         self.engines = engine_catalog()
         self.hub = EventHub(self)
@@ -2009,6 +2021,10 @@ def run_desktop():
     app = QApplication.instance() or QApplication(sys.argv[:1])
     app.setApplicationName("Wayground Pro")
     app.setOrganizationName("WaygroundAutomator")
+    if sys.platform.startswith("linux"):
+        # Lets Wayland/X11 panels match the window to its .desktop entry.
+        app.setDesktopFileName("wayground-automator")
+    app.setWindowIcon(app_icon())
     window = DesktopWindow(capture_logs=True)
     window.show()
     return app.exec()

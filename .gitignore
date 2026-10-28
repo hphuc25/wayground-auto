@@ -26,3 +26,8 @@ test-results/
 *.html
 .idea/
 .wrangler/
+
+# Arch package
+packaging/arch/pkg/
+packaging/arch/src/
+*.pkg.tar.zst

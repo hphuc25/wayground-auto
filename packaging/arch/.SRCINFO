@@ -1,0 +1,18 @@
+pkgbase = wayground-pro-automator
+	pkgdesc = Automated test-taking on wayground.com with a native desktop UI and a console mode
+	pkgver = 4.0
+	pkgrel = 1
+	url = https://github.com/whyred2/wayground-pro-automator
+	arch = x86_64
+	arch = aarch64
+	license = MIT
+	depends = python
+	depends = pyside6
+	depends = python-playwright
+	depends = python-openai
+	optdepends = chromium: free Chromium-based browser used for the automation profile
+	optdepends = google-chrome: Google Chrome instead of Chromium
+	optdepends = brave-browser: Brave instead of Chromium
+	options = !strip
+
+pkgname = wayground-pro-automator

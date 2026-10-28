@@ -1,0 +1,46 @@
+# Maintainer: Wayground Pro Automator developers <https://github.com/whyred2/wayground-pro-automator>
+pkgname=wayground-pro-automator
+pkgver=4.0
+pkgrel=1
+pkgdesc="Automated test-taking on wayground.com with a native desktop UI and a console mode"
+arch=('x86_64' 'aarch64')
+url="https://github.com/whyred2/wayground-pro-automator"
+license=('MIT')
+depends=('python' 'pyside6' 'python-playwright' 'python-openai')
+optdepends=(
+  'chromium: free Chromium-based browser used for the automation profile'
+  'google-chrome: Google Chrome instead of Chromium'
+  'brave-browser: Brave instead of Chromium'
+)
+makedepends=()
+provides=()
+conflicts=()
+replaces=()
+backup=()
+options=(!strip)
+source=()
+sha256sums=()
+
+# The package builds from this checkout, so there is no download step.
+# Run `cd packaging/arch && makepkg -si` from the repository root.
+
+package() {
+    local root="$startdir/../.."
+
+    # Application sources and bundled SVG/ICO/PNG assets.
+    install -dm755 "$pkgdir/usr/share/$pkgname/src" "$pkgdir/usr/share/$pkgname/assets"
+    install -Dm644 "$root"/src/*.py "$pkgdir/usr/share/$pkgname/src/"
+    install -Dm644 "$root"/assets/* "$pkgdir/usr/share/$pkgname/assets/"
+
+    # Launcher: the console/GUI entry point used by the desktop file.
+    install -Dm755 /dev/stdin "$pkgdir/usr/bin/wayground-automator" <<EOF
+#!/bin/sh
+exec python3 /usr/share/$pkgname/src/main.py "\$@"
+EOF
+
+    install -Dm644 "$startdir/wayground-automator.desktop" \
+        "$pkgdir/usr/share/applications/wayground-automator.desktop"
+    install -Dm644 "$root/assets/logo.png" \
+        "$pkgdir/usr/share/icons/hicolor/256x256/apps/wayground-automator.png"
+    install -Dm644 "$root/LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

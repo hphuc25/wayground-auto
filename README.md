@@ -140,7 +140,7 @@ These screenshots show the actual desktop windows with demonstration data, not a
 - **Hybrid Answer Engine** — Retrieves explicit Wayground API keys, checks public quiz candidates against the game, and supports captured network responses, optional Quizit Standard, and CheatNetwork fallback. AI can solve missing questions when enabled.
 - **Separate Question Records** — Repeated wording and image variants keep their own answers. IDs and visible option sets distinguish variants without merging their keys.
 - **Unresolved Questions Stop Automation** — If no complete answer is available, the current question is left unsubmitted with an explanation.
-- **Desktop and console operation** — The default Windows UI connects to a dedicated Edge/Chrome profile. The console menu retains attach and standalone-browser modes.
+- **Desktop and console operation** — The default desktop UI connects to a dedicated Edge/Chrome/Chromium profile. The console menu retains attach and standalone-browser modes.
 - **Variable answer timing** — The desktop **Min delay** defaults to 10 seconds, adds question-length timing and ±30% variation, and never falls below the selected minimum. Set it to **0** to skip automatic waiting; **Answer now** submits immediately.
 - **Intentional errors** — Set the limit in Settings or use `--wrong N` in the console. Desktop mistakes use verified keys and available alternatives; lowering the limit to zero preserves past mistakes and cancels pending ones.
 - **Native desktop controls** — Startup, live panel, compact strip and themed Settings share rounded outlines, readable answer text, pause/resume, Boss key and on-top controls. Accuracy percentages come from Wayground results.
@@ -194,6 +194,27 @@ python -m playwright install chromium
 # 3. Optional: configure personal API keys or a custom gateway
 cp .env.example .env
 # Edit .env if using your own provider; the bundled gateway needs no personal key
+```
+
+#### Option 3: Linux
+
+The desktop UI, console mode and browser automation run natively on Linux.
+See **[docs/LINUX.md](docs/LINUX.md)** for setup, browser detection, the
+`./build.sh` standalone build and platform notes (global Boss key and tray
+behavior under Wayland/X11).
+
+Arch Linux ships a system package build: **[docs/ARCH.md](docs/ARCH.md)**
+
+```bash
+cd packaging/arch && makepkg -si
+wayground-automator          # desktop UI after installation
+```
+
+```bash
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+python -m playwright install chromium   # fallback browser
+python src/main.py                      # desktop UI
 ```
 
 ### Quick Start
@@ -294,6 +315,8 @@ Commit `tests/` with the source changes. These regression checks are not include
 Native UI interaction checks run offline with the other Python tests. For full automation checks against local fixture pages in a fresh headless Edge browser, run `python tests/browser_desktop_check.py`. This does not connect to or answer a live game.
 
 To build the windowed executable on Windows, install PyInstaller in the same Python environment as the requirements, then run `python scripts/build_windows.py`. The file is written to `dist/<version>/WaygroundAutomator.exe`. This build isolates DLL lookup from unrelated tools on PATH; `--console` produces a diagnostic build under `scratch/gui-debug`.
+
+On Linux, run `./build.sh` (or `python scripts/build_linux.py`). The binary is written to `dist/<version>/WaygroundAutomator`; see **[docs/LINUX.md](docs/LINUX.md)**. To build without installing Python/Qt on the host, run `./scripts/build_in_container.sh` (podman or docker) — the binary lands at `dist/WaygroundAutomator`.
 
 ---
 

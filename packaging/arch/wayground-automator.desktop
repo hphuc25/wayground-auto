@@ -1,0 +1,19 @@
+[Desktop Entry]
+Type=Application
+Name=Wayground Pro Automator
+Comment=Automated tests on wayground.com
+Exec=wayground-automator
+Icon=wayground-automator
+Terminal=false
+StartupNotify=true
+Categories=Utility;
+Keywords=wayground;quizizz;test;automation;quiz;
+Actions=Console;ConsoleAttach;
+
+[Desktop Action Console]
+Name=Console menu
+Exec=wayground-automator --cli
+
+[Desktop Action ConsoleAttach]
+Name=Attach to a running browser
+Exec=wayground-automator --cli --attach
